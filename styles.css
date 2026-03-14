@@ -1,0 +1,345 @@
+/* Вмъкване на шрифт от Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&display=swap');
+ * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Comfortaa', cursive;  
+}
+ /* Настройки за основния фон на страницата */
+body {
+    margin: 0;
+    min-height: 100vh;
+    /* По-динамичен градиент с анимация */
+    background: linear-gradient(45deg, #a18cd1, #fbc2eb, #f6d365, #a18cd1);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;/* Анимира движението на фона */
+    display: flex;
+    flex-direction: column;
+    font-family: 'Comfortaa', cursive;
+    overflow-x: hidden;
+}
+
+ /* Aнимацията за движение на фона */
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }   /* Старт */
+    50% { background-position: 100% 50%; } /* Среда */
+    100% { background-position: 0% 50%; }  /* Край - връщане в началото */
+}
+
+.site {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Централната част на сайта, където са гатанките*/
+main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px 15px;
+}
+/* Стил за хедъра (навигацията) */
+.custom-header {
+  background: rgba(0, 0, 0, 0.1); /* Прозрачен фон вместо син */
+  color: white;
+  padding: 16px 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+/* Подреждане на логото и менюто в хедъра */
+.nav-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+}
+
+.nav {
+  list-style: none;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: 0.25s ease;
+}
+/* Ефект при минаване с мишката върху линк */
+.nav-link:hover {
+  background: rgba(255,255,255,0.15);
+}
+/* ОСНОВНАТА КАРТА (Контейнера за вход/игра) */
+ .level-card {
+    width: 450px;  
+    max-width: 95%;
+    /* Прозрачен бял фон с повече стил */
+    background: rgba(255, 255, 255, 0.25);/* Прозрачно бяло "стъкло" */
+    backdrop-filter: blur(20px);/* Размазва фона зад картата */
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 40px;
+    padding: 80px 50px 50px 50px; /* Добавено padding-top за патето */
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    color: #ffffff;
+    text-align: center;
+    position: relative;
+    overflow: visible;
+    animation: cardFadeIn 0.8s ease-out, cardFloat 6s ease-in-out infinite;
+    transform-style: preserve-3d;
+}
+/* Анимация за появяване на картата с леко уголемяване */
+@keyframes cardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+/* Анимация за леко "плуване" нагоре-надолу */
+@keyframes cardFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.level-card h2 {
+  margin-bottom: 15px;
+  color: #1e40af;
+  font-size: 2.5em;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  animation: textGlow 2s ease-in-out infinite alternate;
+}
+/* Анимация за сияние на текста */
+@keyframes textGlow {
+    from { text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+    to { text-shadow: 0 2px 10px rgba(30,64,175,0.6), 0 0 20px rgba(30,64,175,0.4); }
+}
+
+.level-card h3 {
+  margin-top: 15px;
+  font-size: 2em;
+  color: #2563eb;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+/* Анимация за пулсиране на H3 */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+/* Стил за текста на гатанката */
+.riddle-text {
+  margin: 20px 0;
+  font-size: 1.3em;
+  font-weight: 500;
+  line-height: 1.4;
+  animation: textFadeIn 1s ease-out;
+}
+
+@keyframes textFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+/* ОБЩИ НАСТРОЙКИ ЗА ПОЛЕТАТА   */
+input {
+  width: 90%;
+  padding: 15px 18px;
+  margin: 15px 0;
+  border-radius: 15px;
+  border: 2px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.1);
+  color: #ffffff;
+  font-size: 1em;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+}
+/* Стил за подсказващия текст в полето */
+input::placeholder {
+  color: rgba(255,255,255,0.7);
+}
+/* Стил при кликване върху полето  */
+input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.2), inset 0 0 0 1px rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.2);
+  transform: scale(1.02);
+}
+/* СТИЛ ЗА БУТОНИТЕ */
+button,
+.btn {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 15px 30px;
+  border-radius: 20px;
+  border: none;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  font-weight: 700;
+  font-size: 1.1em;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(37,99,235,0.3);
+}
+/* Ефект "Светлинна вълна" върху бутона */
+button::before,
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+/* Движение на вълната при ховър */
+button:hover::before,
+.btn:hover::before {
+  left: 100%;
+}
+/* Ефект при посочване на бутона */
+button:hover,
+.btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 25px rgba(37,99,235,0.4);
+}
+/* Ефект при натискане на бутона */
+button:active,
+.btn:active {
+  transform: translateY(-1px) scale(1.02);
+}
+
+.hint-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.hint-btn:hover {
+  box-shadow: 0 10px 20px rgba(16,185,129,0.25);
+}
+/* Стил за грешен резултат (разклащане) */
+.result {
+  margin-top: 15px;
+  font-weight: 700;
+  color: #ef4444;
+  font-size: 1.1em;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.hint-wrapper {
+  margin-top: 15px;
+}
+
+.hint-img {
+  max-width: 100%;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  animation: imagePop 0.6s ease-out;
+  transition: transform 0.3s ease;
+}
+
+.hint-img:hover {
+  transform: scale(1.05);
+}
+/* Анимация за изскачане на картинката */
+@keyframes imagePop {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+ .custom-footer {
+    background-color: rgba(0, 0, 0, 0.1); /* Прозрачен фон вместо син */
+    color: white;
+    text-align: center;
+    padding: 20px;
+    margin-top: auto; /* Това ще го залепи най-долу на страницата */
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Адаптивност за мобилни телефони (под 500px ширина) */
+@media (max-width: 500px) {
+  .level-card {
+    padding: 24px 18px;
+  }
+
+  .nav {
+    gap: 10px;
+  }
+
+  .logo {
+    font-size: 18px;
+  }
+}
+  /* --- 5. ТАЛИСМАН (ПАTE) --- */
+ .talisman {
+    position: absolute;
+    top: -85px; /* Нагласяме го да "стъпи" с ръчички на ръба */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    z-index: 10; /* Да е над всичко */
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.talisman svg {
+    filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2));
+}
+
+/* Ефекти на патето при активност в картата */
+.level-card:focus-within .talisman {
+    top: -95px;
+    transform: translateX(-50%) scale(1.1);
+}
+/* Светло състояние по подразбиране */
+input[type="text"], 
+input[type="password"] {
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    color: #333 !important;
+    transition: all 0.3s ease !important;
+}
+
+ /* ТЪМНО състояние при цъкване (Focus) с прозрачност */
+input[type="text"]:focus, 
+input[type="password"]:focus {
+    background-color: rgba(0, 0, 0, 0.7) !important; /* 70% прозрачно черно */
+    color: #ffffff !important; 
+    border: 2px solid #2563eb !important;
+    outline: none !important;
+    backdrop-filter: blur(10px); /* Това ще размие фона зад полето за още по-як ефект */
+}
