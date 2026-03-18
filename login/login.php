@@ -14,7 +14,9 @@ if (isset($_GET['username']) && isset($_GET['password'])) {
     // Твоята проверка (училищна симулация)
     if ($username == 'valentina22105' && $password == 'password') {
         $_SESSION['user'] = $username; // Записваме потребителя в сесията
-        header("Location: ../index.php");
+        // Позволяваме достъп до колелото (чрез cookie)
+        setcookie('wheel_allowed', '1', time() + 60 * 60 * 24, '/');
+        header("Location: ../profile.php");
         exit;
     } else {
         $wrong = 'Грешно потребителско име или парола';
