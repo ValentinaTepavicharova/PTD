@@ -158,6 +158,24 @@ button:disabled {
     font-size: 0.85rem;
     color: #aaa;
 }
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Тъмен фон */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+}
+
+/* Използваме твоя съществуващ стил за картата */
+.modal-overlay .level-card {
+    animation: fadeIn 0.4s ease-out;
+}
 </style>
 
 <script>
@@ -237,3 +255,25 @@ syncFreeBtn();
 </script>
 </body>
 </html>
+<?php if (isset($_SESSION['show_prize_modal'])): ?>
+    <div class="modal-overlay">
+        <div class="level-card">
+            <img src="images/duck-talisman.png" class="talisman" alt="Пате">
+            <h2>Честито! 🎉</h2>
+            <p class="riddle-text">Ти спечели:</p>
+            <h3 style="color: #2563eb;"><?= $_SESSION['last_prize'] ?></h3>
+            <p>Твоят нов баланс: ⭐ <?= $_SESSION['stars'] ?></p>
+            
+            <form method="post" style="margin-top: 20px;">
+                <button name="close_modal" class="btn">Супер!</button>
+            </form>
+        </div>
+    </div>
+    <?php 
+        // Изчистваме съобщението, за да не излиза пак при рефреш
+        if (isset($_POST['close_modal'])) {
+            unset($_SESSION['show_prize_modal']);
+            header("Location: profile.php");
+        }
+    ?>
+<?php endif; ?>
