@@ -51,19 +51,80 @@ if (!$freeSpinAvailable) {
                 <button class="btn-free" id="freeBtn" onclick="spin('free')">🎁 Безплатно</button>
                 <div id="timer" class="timer-text"></div>
             </div>
-            <button class="btn-paid" id="paidBtn" onclick="spin('paid')">💎 50 Звезди</button>
+            <button class="btn-paid" id="paidBtn" onclick="spin('paid')">⭐ 50 Звезди</button>
         </div>
 
         <div style="margin-top: 22px;">
             <a href="index.php" class="btn">🏠 Към играта</a>
         </div>
     </div>
+   <div id="win-popup" class="popup-overlay">
+    <div class="popup-card">
+        <div class="confetti"></div>
+        <img src="images/duck-talisman.png" alt="Победа" class="popup-duck">
+        <h2>Честито!</h2>
+        <p id="popup-prize-text">Спечели награда!</p>
+        <button onclick="closePopup()" class="btn">Затвори!</button>
+    </div>
+</div> 
 </main>
 
 <?php include 'include/footer.php'; ?>
 </div>
 
 <style>
+    /* Фоново затъмняване */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    display: none; /* Скрито по подразбиране */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Самата карта */
+.popup-card {
+    background: linear-gradient(135deg, #ffffff, #f3f4f6);
+    padding: 40px;
+    border-radius: 30px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    position: relative;
+    max-width: 90%;
+    width: 350px;
+    transform: scale(0.7);
+    animation: popupAppear 0.4s cubic-bezier(0.17, 0.89, 0.32, 1.27) forwards;
+}
+
+.popup-card h2 { color: #1e40af; font-size: 2em; margin-bottom: 10px; }
+.popup-card p { color: #333; font-size: 1.2em; font-weight: bold; }
+
+.popup-duck {
+    width: 100px;
+    margin-bottom: 15px;
+    animation: floatDuck 2s ease-in-out infinite;
+}
+
+/* Анимации */
+@keyframes popupAppear {
+    to { transform: scale(1); }
+}
+
+@keyframes floatDuck {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Клас за показване */
+.popup-overlay.active {
+    display: flex;
+}
 /* Wheel styles (вградени, за да не се налага допълнителен css файл) */
 .wheel-wrapper {
     position: relative;
@@ -143,7 +204,7 @@ button {
 }
 
 .btn-paid {
-    background: #f1c40f;
+    background: #fff36a;
     color: #333;
 }
 
@@ -214,9 +275,11 @@ function spin(type) {
             }
 
             wheel.style.transform = `rotate(${data.rotation}deg)`;
-
+        
             setTimeout(() => {
-                alert('🎉 ' + data.prize);
+                 // Замени alert-а с това:
+document.getElementById('popup-prize-text').innerText = "Ти спечели: " + data.prize;
+document.getElementById('win-popup').classList.add('active');
                 starBalance.innerText = data.new_balance + ' ⭐';
                 isSpinning = false;
 
@@ -231,8 +294,11 @@ function spin(type) {
             alert('Грешка при въртенето. Опитайте пак.');
             isSpinning = false;
         });
-}
 
+}
+function closePopup() {
+    document.getElementById('win-popup').classList.remove('active');
+}
 syncFreeBtn();
 </script>
 </body>

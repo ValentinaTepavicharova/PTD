@@ -4,9 +4,9 @@ session_start();
 $wrong = "";
 
 // Проверка дали формата е изпратена
-if (isset($_GET['username']) && isset($_GET['password'])) {
-    $username = $_GET['username'];
-    $password = $_GET['password'];
+if (isset($_POST['username']) && isset($_POST['password'])) {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
 
     // За училищния проект: приемаме само този конкретен потребител
     if ($username == 'valentina22105' && $password == 'password') {

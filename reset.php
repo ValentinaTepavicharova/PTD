@@ -1,7 +1,8 @@
  <?php
 session_start();
-session_unset(); // Изчиства данните в сесията
-session_destroy(); // Унищожава сесията
+$_SESSION['level'] = 0;   // Връщаме играта отначало
+$_SESSION['started'] = false; // Показваме стартовия екран
+// НЕ трием $_SESSION['stars'], за да си останат спечелените точки!
 header("Location: index.php");
 exit;
 ?>
