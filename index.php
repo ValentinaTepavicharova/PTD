@@ -1,13 +1,14 @@
  <?php
+ // Стартираме сесията, за да можем да помним точките и нивата на играча, докато той превключва страниците
 session_start();
 
 // --- ЛОГИКА ЗА ТОЧКИ И ЖОКЕРИ ---
 if (!isset($_SESSION['started'])) {
-    $_SESSION['started'] = false;
+    $_SESSION['started'] = false;// Показва дали играчът е натиснал бутона "Старт"
 }
 
 if (!isset($_SESSION['level'])) {
-    $_SESSION['level'] = 0;
+    $_SESSION['level'] = 0; // Започваме от първото ниво (индекс 0)
 }
 
 // Първоначално даваме 0 точки
@@ -19,7 +20,7 @@ if (!isset($_SESSION['points'])) {
 if (!isset($_SESSION['hints_used'])) {
     $_SESSION['hints_used'] = 0;
 }
-
+// Всеки елемент съдържа текст, верен отговор и път до снимка-жокер
 $riddles = [
     ['text'=>'Имам корона, но не съм цар. Какво съм?', 'answer'=>'дърво', 'image'=>'images/image1.jpg'],
     ['text'=>'Лети без крила и плаче без очи. Какво е?', 'answer'=>'облак', 'image'=>'images/image2.jpg'],
@@ -53,8 +54,8 @@ $riddles = [
 ];
 
 $level = $_SESSION['level'];
-$result = '';
-$hintError = ''; // Променлива за грешка, ако няма точки
+$result = '';// Пази съобщението за верен/грешен отговор
+$hintError = ''; // Променлива за грешка, ако няма точки за жокер
 
 // --- ЛОГИКА ЗА КЛИКВАНЕ НА ЖОКЕР ---
 if (isset($_GET['hint'])) {
@@ -77,25 +78,26 @@ if (isset($_GET['hint'])) {
 } else {
     $showHint = false;
 }
-
+// --- СТАРТИРАНЕ НА НОВА ИГРА ---
 if (isset($_POST['start'])) {
     $_SESSION['started'] = true;
     $_SESSION['level'] = 0;
     $_SESSION['points'] = 0;
     $_SESSION['hints_used'] = 0; // Нулираме жокерите при нов старт
-    header("Location: index.php");
+    header("Location: index.php");// Презареждаме страницата, за да изчистим POST данните
     exit;
 }
-
+// Проверка дали сме минали всички гатанки
 $finished = $level >= count($riddles);
-
+// --- ПРОВЕРКА НА ОТГОВОРА (POST заявка) ---
 if (!$finished && isset($_POST['answer'])) {
     $userAnswer = mb_strtolower(trim($_POST['answer']));
-
+    // mb_strtolower прави текста малък (за да няма значение дали пишеш "Дърво" или "дърво")
+    // trim премахва излишни интервали в началото или края
     if ($userAnswer === $riddles[$level]['answer']) {
-        $_SESSION['points'] += 10;
-        $_SESSION['level']++;
-        header("Location: index.php");
+        $_SESSION['points'] += 10;// Даваме бонус точки
+        $_SESSION['level']++;// Преминаваме на следващото ниво
+        header("Location: index.php");// Презареждане към следващата гатанка
         exit;
     } else {
         $result = '❌ Грешен отговор!';
@@ -138,9 +140,9 @@ if (!$finished && isset($_POST['answer'])) {
         <small style="display:block; margin-bottom:10px; color:#eee;">
             <?php 
             if($_SESSION['hints_used'] < 3) {
-                echo "🎁 Остават " . (3 - $_SESSION['hints_used']) . " безплатни жокера";
+                echo "<span class=\"hint-note\">🎁 Остават " . (3 - $_SESSION['hints_used']) . " безплатни жокера</span>";
             } else {
-                echo "💰 Жокерите вече струват 5 точки";
+                echo "<span class=\"hint-note\">💰 Жокерите вече струват 5 точки</span>";
             }
             ?>
         </small>

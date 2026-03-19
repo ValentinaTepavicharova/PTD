@@ -145,10 +145,24 @@ main {
 /* Стил за текста на гатанката */
 .riddle-text {
   margin: 20px 0;
-  font-size: 1.3em;
-  font-weight: 500;
+  font-size: 1.35em;
+  font-weight: 700;
   line-height: 1.4;
-  animation: textFadeIn 1s ease-out;
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(161,140,209,0.65), rgba(251,194,235,0.65), rgba(246,211,101,0.65), rgba(161,140,209,0.65));
+  background-size: 400% 400%;
+  border-radius: 18px;
+  padding: 14px 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  text-shadow: 0 2px 7px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(4px);
+  animation: riddleBgShift 15s ease infinite, textFadeIn 0.8s ease-out;
+}
+
+@keyframes riddleBgShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 @keyframes textFadeIn {
@@ -171,6 +185,10 @@ input {
 /* Стил за подсказващия текст в полето */
 input::placeholder {
   color: rgba(255,255,255,0.7);
+}
+.hint-note {
+  color: #ffffff;
+  font-weight: 600;
 }
 /* Стил при кликване върху полето  */
 input:focus {
