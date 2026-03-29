@@ -1,14 +1,13 @@
-<?php
-header('Content-Type: application/json');
+ <?php
 session_start();
 
 // Достъп само за влезли потребители
 if (!isset($_SESSION['user'])) {
-    echo json_encode(['success' => false, 'message' => 'Трябва да влезете, за да ползвате колелото.']);
+    header('Location: index.php');
     exit;
 }
 
-// Инициализиране на баланса и датата на последно въртене
+// Инициализиране на баланса
 if (!isset($_SESSION['stars'])) {
     $_SESSION['stars'] = 100;
 }
@@ -19,17 +18,20 @@ if (!isset($_SESSION['last_spin_date'])) {
 $type = $_GET['type'] ?? 'free';
 $today = date("Y-m-d");
 
+// Проверки за лимит и баланс
 if ($type === 'free' && $_SESSION['last_spin_date'] === $today) {
-    echo json_encode(['success' => false, 'message' => 'Вече завъртяхте днес!']);
+    $_SESSION['wheel_error'] = 'Вече завъртяхте днес!';
+    header('Location: profile.php'); // Или страницата, където е колелото
     exit;
 }
 
 if ($type === 'paid' && $_SESSION['stars'] < 50) {
-    echo json_encode(['success' => false, 'message' => 'Нямате достатъчно звезди!']);
+    $_SESSION['wheel_error'] = 'Нямате достатъчно звезди!';
+    header('Location: profile.php');
     exit;
 }
 
-// Дефиниция на секторите
+// Награди
 $prizes = [
     0 => ['name' => '10 Звезди', 'bonus' => 10],
     1 => ['name' => 'Жокер', 'bonus' => 0],
@@ -42,10 +44,7 @@ $prizes = [
 $win_index = rand(0, 5);
 $selected = $prizes[$win_index];
 
-// Ъгълът, за да се позиционираме в сектора
-$angle_offset = ($win_index * 60) + 30;
-$total_rotation = (360 * 8) + (360 - $angle_offset);
-
+// Обновяване на баланса
 if ($type === 'free') {
     $_SESSION['last_spin_date'] = $today;
 } else {
@@ -54,9 +53,10 @@ if ($type === 'free') {
 
 $_SESSION['stars'] += $selected['bonus'];
 
-echo json_encode([
-    'success' => true,
-    'rotation' => $total_rotation,
-    'prize' => $selected['name'],
-    'new_balance' => $_SESSION['stars']
-]);
+// ЗАПИСВАМЕ РЕЗУЛТАТА ЗА ПОП-ЪПА
+$_SESSION['show_prize_modal'] = true;
+$_SESSION['last_prize'] = $selected['name'];
+
+// Връщаме се към профила
+header('Location: profile.php');
+exit;
