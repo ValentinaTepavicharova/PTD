@@ -43,7 +43,14 @@ if (!$freeSpinAvailable) {
 
         <div class="wheel-wrapper">
             <div class="pointer"></div>
-            <div id="wheel"></div>
+            <div id="wheel">
+                <div class="segment" style="--i:0; --bg:#2980b9;"><span>10 ⭐</span></div>
+                <div class="segment" style="--i:1; --bg:#f39c12;"><span>Жокер</span></div>
+                <div class="segment" style="--i:2; --bg:#27ae60;"><span>Скип</span></div>
+                <div class="segment" style="--i:3; --bg:#2980b9;"><span>10 ⭐</span></div>
+                <div class="segment" style="--i:4; --bg:#f39c12;"><span>Жокер</span></div>
+                <div class="segment" style="--i:5; --bg:#27ae60;"><span>Скип</span></div>
+            </div>
         </div>
 
         <div class="controls">
@@ -236,6 +243,67 @@ button:disabled {
 /* Използваме твоя съществуващ стил за картата */
 .modal-overlay .level-card {
     animation: fadeIn 0.4s ease-out;
+}
+.wheel-wrapper {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    margin: 40px auto;
+}
+
+.pointer {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 35px solid #e74c3c;
+    z-index: 100;
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
+}
+
+#wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    border: 8px solid #333;
+    transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
+    background: #333;
+}
+
+.segment {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    /* Режем сегмента точно на 60 градуса */
+    clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 20%);
+    transform: rotate(calc(var(--i) * 60deg));
+    display: flex;
+    justify-content: center;
+}
+
+/* Корекция на clip-path за 6 парчета */
+.segment {
+    clip-path: polygon(50% 50%, 100% 20%, 100% 80%);
+    transform: rotate(calc(var(--i) * 60deg - 30deg));
+}
+
+.segment span {
+    position: absolute;
+    right: 25px; /* Разстояние от ръба на колелото */
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+    white-space: nowrap;
 }
 </style>
 
