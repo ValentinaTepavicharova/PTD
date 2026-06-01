@@ -1,21 +1,24 @@
  <?php
 session_start(); // Винаги започваме сесията най-отгоре
+require_once '../include/db.php'; // Включваме връзката с базата данни
+
 $wrong = "";
 $success = "";
 
-if (isset($_POST['registered']) && $_POST['registered'] == '1') {
-    $success = 'Регистрацията е успешна! Моля, влезте.';
-}
-
-if (isset($_POST['username']) && isset($_POST['password'])) {
-    $username = $_POST['username'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = trim($_POST['username']);
     $password = $_POST['password'];
 
-    // Твоята проверка (училищна симулация)
-    if ($username == 'valentina22105' && $password == 'password') {
-        $_SESSION['user'] = $username; // Записваме потребителя в сесията
-        // Позволяваме достъп до колелото (чрез cookie)
-        setcookie('wheel_allowed', '1', time() + 60 * 60 * 24, '/');
+    $stmt = $pdo->prepare("SELECT * FROM Users WHERE Username = ?");
+    $stmt->execute([$username]);
+    $user = $stmt->fetch();
+
+    if ($user && password_verify($password, $user['Password'])) {
+        $_SESSION['user'] = $user['Username'];
+        $_SESSION['stars'] = (int)$user['Stars'];
+        $_SESSION['last_spin_date'] = $user['Last_spin_date'] ?? '';
+        
+        setcookie('wheel_allowed', '1', time() + 86400, '/');
         header("Location: ../profile.php");
         exit;
     } else {
@@ -29,7 +32,9 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вход - Гатанки</title>
-    <link rel="stylesheet" href="../styles.css"> </head>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="icon" type="image/x-icon" href="../images/logo.png">
+</head>
 <body>
 <div class="site">
     <?php include '../include/header.php'; ?> 
@@ -40,18 +45,17 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
             
             <h2>Вход</h2>
             
-            <?php if ($success): ?>
-                <div style="color: #10b981; margin-bottom: 10px; font-weight: 600;"><?php echo $success; ?></div>
-            <?php endif; ?>
-            
             <?php if ($wrong): ?>
                 <div style="color: #ef4444; margin-bottom: 10px; font-weight: 600;"><?php echo $wrong; ?></div>
             <?php endif; ?>
-        <form action="login.php" method="post">
-             <input type="text" name="username" placeholder="Потребителско име" required>
-             <input type="password" name="password" placeholder="Парола" required>
-            <button type="submit">Влез</button>
-        </form>
+            <form action="login.php" method="POST">
+                <input type="text" name="username" placeholder="Потребителско име" required>
+                <div style="position: relative;">
+                    <input type="password" id="password" name="password" placeholder="Парола" required>
+                    <span onclick="togglePassword()" style="position:absolute; right:15px; top:50%; transform:translateY(-50%); cursor:pointer; color:#2563eb;">👁</span>
+                </div>
+                <button type="submit">Влез</button>
+            </form>
 
             <div style="margin-top: 20px;">
                  <a href="../index.php" class="btn" style="background: #64748b;">Отказ</a>
@@ -64,5 +68,11 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
 
     <?php include '../include/footer.php'; ?>
 </div>
+<script>
+    function togglePassword() {
+        const pwd = document.getElementById('password');
+        pwd.type = pwd.type === 'password' ? 'text' : 'password';
+    }
+</script>
 </body>
 </html>

@@ -1,21 +1,44 @@
  <?php
-session_start();
-// Променлива, в която ще съхраняваме съобщението за грешка, ако данните са грешни
-$wrong = "";
+session_start(); // Винаги започваме сесията най-отгоре
+require_once '../include/db.php';
 
-// Проверка дали формата е изпратена
-if (isset($_POST['username']) && isset($_POST['password'])) {
-    $username = $_POST['username'];
+$wrong = "";
+$success = "";
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = trim($_POST['username']);
     $password = $_POST['password'];
 
-    // За училищния проект: приемаме само този конкретен потребител
-    if ($username == 'valentina22105' && $password == 'password') {
-        // Пренасочваме към логин страницата с параметър за успех
-        header("Location: ../login/login.php?registered=1");
-        exit;
+    if (strlen($username) < 3 || strlen($password) < 4) {
+        $wrong = "Потребителското име трябва да е поне 3 символа, а паролата - 4.";
     } else {
-        // Ако потребителят въведе нещо друго, показваме съобщение
-        $wrong = 'Моля, използвайте валидни данни за регистрация (напр. valentina22105)';
+        // Проверка дали потребителят вече съществува
+        $stmt = $pdo->prepare("SELECT Id FROM Users WHERE Username = ?");
+        $stmt->execute([$username]);
+        
+        if ($stmt->rowCount() > 0) {
+            $wrong = "Това потребителско име вече съществува!";
+        } else {
+            // Хеширане на паролата (много по-сигурно)
+            $hashed = password_hash($password, PASSWORD_DEFAULT);
+            
+            $stmt = $pdo->prepare("INSERT INTO Users (Username, Password, Stars, Last_spin_date, Hints_used, Bonus_hints, Skip_levels) VALUES (?, ?, 0, null, 0, 0, 0)");
+            if ($stmt->execute([$username, $hashed])) {
+                // Автоматично влизане след регистрация
+                $_SESSION['user'] = $username;
+                $_SESSION['stars'] = 0; // Новите потребители започват с 0 звезди  
+                $_SESSION['last_spin_date'] = '';
+                $_SESSION['hints_used'] = 0;
+                $_SESSION['bonus_hints'] = 0;
+                $_SESSION['skip_levels'] = 0;
+
+                setcookie('wheel_allowed', '1', time() + 86400, '/');
+                header("Location: ../profile.php");
+                exit;
+            } else {
+                $wrong = "Моля въведете валидни данни.";
+            }
+        }
     }
 }
 ?>
@@ -26,6 +49,7 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация - Гатанки</title>
     <link rel="stylesheet" href="../styles.css">
+    <link rel="icon" type="image/x-icon" href="../images/logo.png"> 
 </head>
 <body>
 <div class="site">
@@ -43,9 +67,12 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
                 </div>
             <?php endif; ?>
 
-            <form action="signup.php" method="get">
+            <form action="signup.php" method="POST">
                 <input type="text" name="username" placeholder="Избери потребителско име" required>
-                <input type="password" name="password" placeholder="Избери парола" required>
+                <div style="position: relative;">
+                    <input type="password" id="password" name="password" placeholder="Избери парола" required>
+                    <span onclick="togglePassword()" style="position:absolute; right:15px; top:50%; transform:translateY(-50%); cursor:pointer; color:#2563eb;">👁</span>
+                </div>
                 <button type="submit">Регистрирай се</button>
             </form>
 
@@ -60,5 +87,11 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
 
     <?php include '../include/footer.php'; ?>
 </div>
+<script>
+    function togglePassword() {
+        const pwd = document.getElementById('password');
+        pwd.type = pwd.type === 'password' ? 'text' : 'password';
+    }
+</script>
 </body>
 </html>

@@ -1,115 +1,186 @@
  <?php
  // Стартираме сесията, за да можем да помним точките и нивата на играча, докато той превключва страниците
 session_start();
+require_once 'include/db.php';
+
+// Зареждане на данни от базата, ако потребителят е влязъл
+if (isset($_SESSION['user'])) {
+    $stmt = $pdo->prepare("SELECT Current_level, Stars, Skip_levels, Hints_used, Bonus_hints FROM Users WHERE Username = ?");
+    $stmt->execute([$_SESSION['user']]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($user) {
+        $_SESSION['level'] = (int)$user['Current_level'];
+        $_SESSION['stars'] = (int)$user['Stars'];
+        $_SESSION['skip_levels'] = (int)$user['Skip_levels'];
+        $_SESSION['hints_used'] = (int)$user['Hints_used'];
+        $_SESSION['bonus_hints'] = (int)$user['Bonus_hints'];
+    }
+}
 
 // --- ЛОГИКА ЗА ТОЧКИ И ЖОКЕРИ ---
-if (!isset($_SESSION['started'])) {
-    $_SESSION['started'] = false;// Показва дали играчът е натиснал бутона "Старт"
+
+if (isset($_SESSION['user'])) {
+    $_SESSION['started'] = true; // влезлите потребители винаги виждат играта
+} elseif (!isset($_SESSION['started'])) {
+    $_SESSION['started'] = false; // гости: само ако не са стартирали играта, показваме началния екран
 }
+
 
 if (!isset($_SESSION['level'])) {
     $_SESSION['level'] = 0; // Започваме от първото ниво (индекс 0)
 }
 
- // Вместо $_SESSION['points'] = 0
+// Ако потребителят не е влязъл, даваме 0 точки по подразбиране
 if (!isset($_SESSION['stars'])) {
-    $_SESSION['stars'] = 30; // Начален бонус за нови играчи
+    $_SESSION['stars'] = 0;
 }
 // Нов брояч: колко пъти общо са използвани жокери в цялата игра
 if (!isset($_SESSION['hints_used'])) {
     $_SESSION['hints_used'] = 0;
 }
-// Всеки елемент съдържа текст, верен отговор и път до снимка-жокер
-$riddles = [
-    ['text'=>'Имам корона, но не съм цар. Какво съм?', 'answer'=>'дърво', 'image'=>'images/image1.jpg'],
-    ['text'=>'Лети без крила и плаче без очи. Що е то?', 'answer'=>'облак', 'image'=>'images/image2.jpg'],
-    ['text'=>'Имам пера, но не съм птица. Имам чаршафи, но не съм легло.', 'answer'=>'възглавница', 'image'=>'images/image3.jpg'],
-    ['text'=>'Колкото повече застарявам, толкова по-ниска ставам.', 'answer'=>'свещ', 'image'=>'images/image4.jpg'],
-    ['text'=>'Имам зъби, но не мога да ям.', 'answer'=>'гребен', 'image'=>'images/image5.jpg'],
-    ['text'=>'Крака няма,а тича. Уста няма,а шуми.', 'answer'=>'река', 'image'=>'images/image6.jpg'],
-    ['text'=>'Падам, но никога не се наранявам.', 'answer'=>'дъжд', 'image'=>'images/image2.jpg'],
-    ['text'=>'Колкото повече ме сушиш, толкова по-мокра ставам.', 'answer'=>'кърпа', 'image'=>'images/image8.jpg'],
-    ['text'=>'Имам лице, но нямам очи. Имам стрелки, но нямам лък.', 'answer'=>'часовник', 'image'=>'images/image9.jpg'],
-    ['text'=>'Имам градове, но няма къщи. Имам планини, но няма дървета.', 'answer'=>'карта', 'image'=>'images/image10.jpg'],
-    ['text'=>'Винаги идвам, но никога не пристигам днес.', 'answer'=>'утре', 'image'=>'images/image11.jpg'],
-    ['text'=>'Какво се пълни с празни ръце?', 'answer'=>'ръкавица', 'image'=>'images/image12.jpg'],
-    ['text'=>'Колкото повече вземаш от мен, толкова по-голяма ставам.', 'answer'=>'дупка', 'image'=>'images/image13.jpg'],
-    ['text'=>'Какво принадлежи на теб, но другите го ползват по-често? ', 'answer'=>'името', 'image'=>'images/image14.jpg'],
-    ['text'=>'Какво можеш да го хванеш,но не и да хвърлиш?', 'answer'=>'болест', 'image'=>'images/image15.jpg'],
-    ['text'=>'Какво се чупи, дори само ако му кажеш името?', 'answer'=>'тишина', 'image'=>'images/image16.jpg'],
-    ['text'=>'Кое е това, което го хвърляш, когато ти трябва, и го прибираш, когато не ти трябва?', 'answer'=>'котва', 'image'=>'images/image17.jpg'],
-    ['text'=>'Мога да запълня цяла стая, но не заемам никакво място.', 'answer'=>'светлина', 'image'=>'images/image18.jpg'],
-    ['text'=>'Нямам глас, но ти отговарям винаги, когато ми говориш.', 'answer'=>'ехото', 'image'=>'images/image19.jpg'],
-    ['text'=>'Колкото повече от него има, толкова по-малко виждаш.', 'answer'=>'мъгла', 'image'=>'images/image20.jpg'],
-    ['text'=>'Винаги бяга от теб, но не можеш да го изпревариш.', 'answer'=>'хоризонт', 'image'=>'images/image21.jpg'],
-    ['text'=>'Аз съм лек като перце, но и най-силният човек не може да ме държи дълго.', 'answer'=>'дъх', 'image'=>'images/image22.jpg'],
-    ['text'=>'Какво има една дупка, когато влизаш, и две, когато излизаш?', 'answer'=>'панталони', 'image'=>'images/image23.jpg'],
-    ['text'=>'Кое е това нещо, което се мокри, докато те пази от дъжда?', 'answer'=>'чадър', 'image'=>'images/image24.jpg'],
-    ['text'=>'Кое е това, което минава през градове и полета, но никога не се движи?', 'answer'=>'път', 'image'=>'images/image25.jpg'],
-    ['text'=>'Ако ме имаш, искаш да ме споделиш. Ако ме споделиш, вече ме нямаш.', 'answer'=>'тайна', 'image'=>'images/image26.jpg'],
-    ['text'=>'Дай ми храна и ще живея. Дай ми вода и ще умра.', 'answer'=>'огън', 'image'=>'images/image27.jpg'],
-    ['text'=>'Имам ключове, но няма ключалки. Имам пространство, но няма стаи. Можеш да влезеш, но не можеш да излезеш.', 'answer'=>'клавиатура', 'image'=>'images/image28.jpg'],
-    ['text'=>'Аз не съм нищо, но имам име. Понякога съм висока, понякога ниска. Не мога да мисля, но се движа с теб.', 'answer'=>'сянка', 'image'=>'images/image29.jpg'],
-];
+
+if (!isset($_SESSION['skip_levels'])) {
+    $_SESSION['skip_levels']= 0;
+}
+
+if (!isset($_SESSION['bonus_hints'])) {
+    $_SESSION['bonus_hints']= 0;
+}
+ 
+// Проверяваме дали нивото в сесията отговаря на това, за което е бил активиран жокера
+if (!isset($_SESSION['hint_active_for_level']) || $_SESSION['hint_active_for_level'] != $_SESSION['level']) {
+    $_SESSION['hint_active'] = false;
+    $_SESSION['hint_active_for_level'] = null;
+}
+
+require_once 'include/riddles.php';
+
 
 $level = $_SESSION['level'];
 $result = '';// Пази съобщението за верен/грешен отговор
 $hintError = ''; // Променлива за грешка, ако няма точки за жокер
 
-// --- ЛОГИКА ЗА КЛИКВАНЕ НА ЖОКЕР ---
- 
-if (isset($_GET['hint'])) {
-    $used = $_SESSION['hints_used'];
-    $currentPrice = 0;
-
-    // Определяме цената според твоята схема
-    if ($used < 3) {
-        $currentPrice = 0;
-    } elseif ($used < 8) {
-        $currentPrice = 5;
-    } elseif ($used < 13) {
-        $currentPrice = 10;
-    } else {
-        $currentPrice = 15;
+//Функция за синхронизиране с базата
+function syncWithDatabase($pdo) {
+    if (isset($_SESSION['user'])) {
+        $stmt = $pdo->prepare("UPDATE Users SET Current_level = ?, Stars = ?, Skip_levels = ?, Hints_used = ?, Bonus_hints = ? WHERE Username = ?");
+        $stmt->execute([
+            $_SESSION['level'],
+            $_SESSION['stars'],
+            $_SESSION['skip_levels'],
+            $_SESSION['hints_used'],
+            $_SESSION['bonus_hints'],
+            $_SESSION['user']
+        ]);
     }
-
-    // ВАЖНО: Проверяваме $_SESSION['stars'], а не 'points'
-    if ($_SESSION['stars'] >= $currentPrice) {
-        $_SESSION['stars'] -= $currentPrice; 
-        $_SESSION['hints_used']++;
-        $showHint = true;
-    } else {
-        $showHint = false;
-        $hintError = "⚠️ Нужни са {$currentPrice} точки за жокер!";
-    }
-} else {
-    $showHint = false;
 }
-// --- СТАРТИРАНЕ НА НОВА ИГРА ---
+
+// Логика за старт на играта
 if (isset($_POST['start'])) {
     $_SESSION['started'] = true;
     $_SESSION['level'] = 0;
-    $_SESSION['stars'] = 0;
-    $_SESSION['hints_used'] = 0; // Нулираме жокерите при нов старт
-    header("Location: index.php");// Презареждаме страницата, за да изчистим POST данните
+    $_SESSION['hints_used'] = 0;
+    $_SESSION['bonus_hints'] = 0;
+    $_SESSION['hint_active'] = false;
+    $_SESSION['stars'] = isset($_SESSION['user']) ? $_SESSION['stars'] : 0; // Ако е гост, започваме с 0 точки
+    $_SESSION['hint_active_for_level'] = null;
+
+    if (isset($_SESSION['user'])) {
+        $stmt= $pdo->prepare("UPDATE Users SET Current_level = ?, Hints_used = ?, Bonus_hints = ? WHERE Username = ?");
+        $stmt->execute([$_SESSION['user']]);
+    }else {
+        // За гости: нулираме точките и нивото
+        $_SESSION['stars'] = 0;
+        $_SESSION['level'] = 0;
+    }
+    header("Location: index.php");
     exit;
 }
 // Проверка дали сме минали всички гатанки
 $finished = $level >= count($riddles);
-// --- ПРОВЕРКА НА ОТГОВОРА (POST заявка) ---
+
+// ПРОПУСК НА НИВО 
+if (!$finished && isset($_POST['skip'])) {
+    // Проверка за пропуски (от колелото)
+    if ($_SESSION['skip_levels'] > 0) {
+        $_SESSION['skip_levels']--;
+        $_SESSION['level']++;
+        $_SESSION['hint_active'] = false; // Деактивираме жокера при пропуск
+        $_SESSION['hint_active_for_level'] = null;
+        $level = $_SESSION['level'];
+        syncWithDatabase($pdo); // Синхронизираме с базата след пропуск
+        header("Location: index.php");
+        exit;
+    } else {
+        $result = '⚠️ Нямате налични пропуски! Спечелете от колелото на профила.';
+    }
+}
+
+// ЖОКЕР 
+$showHint = false;
+
+if (isset($_GET['hint']) && !$_SESSION['hint_active']) {
+    $totalFreeHints = 3 + ($_SESSION['bonus_hints']);
+    // Проверяваме дали вече сме използвали безплатните (3 броя)
+    if ($_SESSION['hints_used'] < $totalFreeHints) {
+        $_SESSION['hints_used']++;
+        $_SESSION['hint_active'] = true; // Активираме жокера за текущото ниво
+        $_SESSION['hint_active_for_level'] = $_SESSION['level']; // Запомняме за кое ниво е активиран жокера
+        $showHint = true;
+        syncWithDatabase($pdo); // Синхронизираме с базата след използване на жокер
+    } else {
+        // Ако са свършили безплатните, проверяваме дали имаме 5 точки
+        if ($_SESSION['stars'] >= 5) {
+            $_SESSION['stars'] -= 5; // Вземаме 5 точки
+            $_SESSION['hints_used']++;
+            $_SESSION['hint_active'] = true; // Активираме жокера за текущото ниво
+            $_SESSION['hint_active_for_level'] = $_SESSION['level']; // Запомняме за кое ниво е активиран жокера
+            $showHint = true;
+            syncWithDatabase($pdo); // Синхронизираме с базата след използване на жокер
+        } else {
+            // Ако няма точки, не показваме жокера и даваме грешка
+            $hintError = "⚠️ Нужни са 5 точки за жокер!";
+        }
+    }
+     // След активиране на жокера, премахваме GET параметъра от URL-то
+    if ($showHint) {
+        header("Location: " . strtok($_SERVER['REQUEST_URI'], '?'));
+        exit;
+    }
+}
+
+// АКО има активен жокер от предишно зареждане
+if (isset($_SESSION['hint_active']) && $_SESSION['hint_active_for_level'] === $_SESSION['level']) {
+    $showHint = true;
+}
+
+// ОТГОВОР 
 if (!$finished && isset($_POST['answer'])) {
     $userAnswer = mb_strtolower(trim($_POST['answer']));
     // mb_strtolower прави текста малък (за да няма значение дали пишеш "Дърво" или "дърво")
     // trim премахва излишни интервали в началото или края
     if ($userAnswer === $riddles[$level]['answer']) {
-        $_SESSION['stars'] += 10;// Даваме бонус точки
-        $_SESSION['level']++;// Преминаваме на следващото ниво
-        header("Location: index.php");// Презареждане към следващата гатанка
+        $_SESSION['stars'] += 10;
+        $_SESSION['level']++;
+        $_SESSION['hint_active'] = false; // Деактивираме жокера при правилен отговор
+        $_SESSION['hint_active_for_level'] = null;
+        syncWithDatabase($pdo); // Синхронизираме с базата след правилен отговор
+
+        header("Location: index.php");
         exit;
     } else {
         $result = '❌ Грешен отговор!';
     }
 }
+
+// Обновяваме $level и $finished след евентуален пропуск
+$level    = $_SESSION['level'];
+$finished = $level >= count($riddles);
+ 
+// Изчисляваме оставащите жокери за показване
+$totalFreeHints = 3 + $_SESSION['bonus_hints'];
+$hintsUsed      = $_SESSION['hints_used'];
+$freeLeft       = max(0, $totalFreeHints - $hintsUsed);
 ?>
 <!DOCTYPE html>
 <html lang="bg">
@@ -144,15 +215,19 @@ if (!$finished && isset($_POST['answer'])) {
         <img src="images/duck-talisman.png" class="talisman" alt="Пате">
         <h2>Ниво <?= $level + 1 ?></h2>
         <p>⭐ Точки: <?= $_SESSION['stars'] ?></p>
-        <small style="display:block; margin-bottom:10px; color:#eee;">
-            <?php 
-            if($_SESSION['hints_used'] < 3) {
-                echo "<span class=\"hint-note\">🎁 Остават " . (3 - $_SESSION['hints_used']) . " безплатни жокера</span>";
-            } else {
-                echo "<span class=\"hint-note\">💰 Жокерите вече струват 5 точки</span>";
-            }
-            ?>
+        <small style="display:block; margin-bottom:4px; color: white;">
+            <?php if ($freeLeft > 0): ?>
+                🎁 Остават <?= $freeLeft ?> безплатни жокера
+            <?php else: ?>
+                💰 Жокерите вече струват 5 точки
+            <?php endif; ?>
         </small>
+        
+          <?php if (isset($_SESSION['user'])): ?>
+        <small style="display:block; margin-bottom:10px; color: white;">
+            ⏭️ Налични пропуски: <?= $_SESSION['skip_levels'] ?>
+        </small>
+        <?php endif; ?>
 
         <p class="riddle-text"><?= $riddles[$level]['text'] ?></p>
 
@@ -171,7 +246,7 @@ if (!$finished && isset($_POST['answer'])) {
 
         <?php if (!$showHint): ?>
             <a href="?hint=1" class="btn hint-btn">
-                <?= ($_SESSION['hints_used'] < 3) ? "Жокер (Безплатен)" : "Жокер (5 точки)" ?>
+                <?= $freeLeft > 0 ? "Жокер (Безплатен)" : "Жокер (5 точки)" ?>
             </a>
         <?php else: ?>
             <div class="hint-wrapper">
@@ -179,9 +254,15 @@ if (!$finished && isset($_POST['answer'])) {
                 <p><small>(Жокерът е активиран)</small></p>
             </div>
         <?php endif; ?>
+        <?php if (isset($_SESSION['user'])): ?>
+        <form method="post" style="margin-top:10px;">
+            <button name="skip" class="btn" style="background: linear-gradient(135deg,#e67e22,#d35400);">
+                ⏭️ Пропусни нивото (<?= $_SESSION['skip_levels'] ?> налични)
+            </button>
+        </form>
+        <?php endif; ?>
     </div>
 <?php endif; ?>
-
 </main>
 
 <?php include 'include/footer.php'; ?>
