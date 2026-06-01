@@ -46,9 +46,9 @@ if (!$freeSpinAvailable) {
             <div id="wheel">
                 <div class="segment" style="--i:0; --bg:#2980b9;"><span>10 ⭐</span></div>
                 <div class="segment" style="--i:1; --bg:#f39c12;"><span>Жокер</span></div>
-                <div class="segment" style="--i:2; --bg:#27ae60;"><span>Скип</span></div>
+                <div class="segment" style="--i:2; --bg:#27ae60;"><span>Пропуск</span></div>
                 <div class="segment" style="--i:3; --bg:#2980b9;"><span>10 ⭐</span></div>
-                <div class="segment" style="--i:4; --bg:#f39c12;"><span>Жокер</span></div>
+                <div class="segment" style="--i:4; --bg:#f39c12;"><span>Пропуск</span></div>
                 <div class="segment" style="--i:5; --bg:#27ae60;"><span>Скип</span></div>
             </div>
         </div>
